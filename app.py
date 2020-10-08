@@ -11,9 +11,17 @@ app.config["MONGO_URI"] = 'mongodb+srv://root:r00tUser@cluster0.5zsef.mongodb.ne
 mongo = PyMongo(app)
 
 
+@app.route('/')
 @app.route('/get_tasks')
 def get_tasks():
     return render_template("tasks.html", tasks=mongo.db.tasks.find())
+
+
+@app.route("/search", methods=["GET", "POST"])
+def search():
+    query = request.form.get("query")
+    tasks = list(mongo.db.tasks.find({"$text": {"$search": query}}))
+    return render_template("tasks.html", tasks=tasks)
 
 
 @app.route('/add_task')
@@ -57,7 +65,6 @@ def delete_task(task_id):
     return redirect(url_for('get_tasks'))
 
 
-@app.route('/')
 @app.route('/get_categories')
 def get_categories():
     return render_template('categories.html',
